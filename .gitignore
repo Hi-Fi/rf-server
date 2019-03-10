@@ -7,3 +7,5 @@ app.db
 env
 venv
 *.sublime*
+work
+.idea
