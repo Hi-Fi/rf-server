@@ -15,9 +15,6 @@ itsdangerous==1.1.0
 Jinja2==2.10
 kiwisolver==1.0.1
 MarkupSafe==1.1.1
-matplotlib==3.0.3
-networkx==2.2
-numpy==1.16.2
 pyparsing==2.3.1
 python-dateutil==2.8.0
 python3-openid==3.1.0

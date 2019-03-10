@@ -5,7 +5,6 @@ from robot import run
 import os.path
 from datetime import datetime
 import uuid
-import networkx as nx
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
 
