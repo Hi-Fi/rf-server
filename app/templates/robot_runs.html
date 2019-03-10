@@ -1,0 +1,20 @@
+{% extends "appbuilder/base.html" %}
+{% block content %}
+    <h1>Robot Framework runs</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Run ID</th>
+            <th>Run completion</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for run in runs %}
+        <tr>
+            <th><a href="/robot/run/{{ run.name }}">{{ run.name }}</a></th>
+            <th>{{ run.completed }}</th>
+        </tr>
+  {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

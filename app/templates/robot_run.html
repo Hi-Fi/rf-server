@@ -1,0 +1,73 @@
+{% extends "appbuilder/base.html" %}
+{% block content %}
+{% if outputdir %}
+    <h1>Run new job</h1>
+    <div>Logs at: {{outputdir}}</div>
+    <div>Results at: <a href="/robot/run/{{ run_id }}">{{ run_id }}</a></div>
+    <div>Results: {{result}}</div>
+{% else %}
+    <h1>Run results from run {{ run_id }}</h1>
+    <div id="svg_container">
+
+      <svg width="100%" height="800">
+        <g id='dig' transform="translate(20,20)"></g>
+        <filter id="blur-effect-1">
+          <feGaussianBlur stdDeviation="3"></feGaussianBlur>
+        </filter>
+      </svg>
+      <img id="loading" alt="spinner" src="{{ url_for('static', filename='loading.gif') }}">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.1/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre-d3/0.6.3/dagre-d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.4/dagre.min.js"></script>
+    <script>
+        var nodes = {{ nodes | safe }}
+        var edges = {{ edges | safe }}
+        var arrange = "LR"
+
+        // Preparation of DagreD3 data structures
+    var g = new dagreD3.graphlib.Graph().setGraph({
+        nodesep: 15,
+        ranksep: 15,
+        rankdir: arrange,
+      })
+      .setDefaultEdgeLabel(function() { return { lineInterpolate: 'basis' } });
+
+       // Set all nodes and styles
+        nodes.forEach(function(node) {
+            g.setNode(node.id, node.value)
+        });
+        // Set edges
+        edges.forEach(function(edge) {
+          g.setEdge(edge.u, edge.v)
+        });
+        var render = dagreD3.render(),
+          svg = d3.select("svg"),
+          innerSvg = d3.select("svg g");
+        innerSvg.call(render, g);
+
+        function setUpZoomSupport() {
+      // Set up zoom support for Graph
+      var zoom = d3.behavior.zoom().on("zoom", function() {
+            innerSvg.attr("transform", "translate(" + d3.event.translate + ")" +
+                                        "scale(" + d3.event.scale + ")");
+          });
+      svg.call(zoom);
+    }
+        setUpZoomSupport();
+        inject_node_ids(tasks);
+
+        // Injecting ids to be used for parent/child highlighting
+    // Separated from update_node_states since it must work even
+    // when there is no valid task instance available
+    function inject_node_ids(tasks) {
+        $.each(tasks, function(task_id, task) {
+            $('tspan').filter(function(index) { return $(this).text() === task_id; })
+                    .parent().parent().parent()
+                    .attr("id", task_id);
+        });
+    }
+
+    </script>
+{% endif %}
+{% endblock %}
