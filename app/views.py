@@ -82,7 +82,7 @@ class MyView(BaseView):
                 label = elem.attrib.get('name') if elem.tag != "test" else elem.attrib.get('name')+doc
                 nodes.append({"id": elem.attrib.get('id'), "value": {"label": label, "labelStyle": "fill:#000;", "style": "fill:"+bg_color+";" }})
                 parent = output.find(".//*[@id='"+elem.attrib.get('id')+"']/...")
-                if parent and parent.attrib.get('id'):
+                if parent is not None and parent.attrib.get('id'):
                     if elem.tag == "test" and not elem.attrib.get("id").endswith("t1"):
                         parent_id = elem.attrib.get("id").split("-").pop().replace('t', '')
                         parent_id = elem.attrib.get("id")[:-int(len(parent_id))]+str(int(parent_id)-1)
