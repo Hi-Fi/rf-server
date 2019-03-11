@@ -118,9 +118,8 @@ class MyView(BaseView):
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
         with open(run_output_dir+'/run.log', 'w') as logfile:
             result = run(os.path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
-        json_results = open(run_output_dir+'/output.xml', 'r').read()
         self.update_redirect()
-        resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id, result=json_results))
+        resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
         return resp
 
 
