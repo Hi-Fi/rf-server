@@ -2,7 +2,7 @@ from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
 from app import appbuilder, db
 from robot import run
-import os.path
+from os import path, mkdir, listdir
 from datetime import datetime
 import uuid
 import xml.etree.ElementTree
@@ -36,7 +36,11 @@ db.create_all()
 
 class MyView(BaseView):
     route_base = "/robot"
-    output_dir = os.path.dirname(__file__) + '/../work/'
+    output_dir = '/tmp/work/'
+    try:
+        mkdir(output_dir)
+    except:
+        pass
 
     @expose('/arguments', methods=['GET', 'POST'])
     def set_robot_arguments(self):
@@ -61,11 +65,13 @@ class MyView(BaseView):
         # do something with param1
         # and return it
         self.update_redirect()
-        directories = os.listdir(self.output_dir)
+        directories = filter(lambda f: not f.startswith('.'), listdir(self.output_dir))
         directory_list = []
         for directory in directories:
             directory_list.append({"name": directory,
-                                   "completed": datetime.fromtimestamp(os.path.getctime(self.output_dir + directory)).strftime("%d.%m.%Y %H:%M:%S")})
+                                   "completed": datetime.fromtimestamp(path.getctime(self.output_dir + directory)).strftime("%d.%m.%Y %H:%M:%S"),
+                                   "timestamp": path.getctime(self.output_dir + directory)})
+        directory_list.sort(key=lambda x: x.get("timestamp"), reverse=True)
         return self.render_template('robot_runs.html', runs=directory_list)
 
     @expose('/run/<string:param1>')
@@ -112,12 +118,12 @@ class MyView(BaseView):
         # and return it
         run_id = str(uuid.uuid4())
         run_output_dir = self.output_dir + run_id
-        os.mkdir(run_output_dir)
+        mkdir(run_output_dir)
         argument1 = self.cookie_or_default(request, "argument1", "argument1")
         argument2 = self.cookie_or_default(request, "argument2", "argument2")
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
         with open(run_output_dir+'/run.log', 'w') as logfile:
-            result = run(os.path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
+            result = run(path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
         self.update_redirect()
         resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
         return resp
