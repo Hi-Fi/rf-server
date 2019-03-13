@@ -5,6 +5,7 @@
     <div>Logs at: {{outputdir}}</div>
     <div>Results at: <a href="/robot/run/{{ run_id }}">{{ run_id }}</a></div>
 {% else %}
+    <link href="{{ url_for('static', filename='css/graph.css') }}" rel="stylesheet" type="text/css">
     <h1>Run results from run {{ run_id }}</h1>
     <div id="svg_container">
 
