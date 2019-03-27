@@ -8,6 +8,7 @@ import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
 from google.cloud import tasks_v2beta3
+import json
 
 
 """
@@ -126,7 +127,7 @@ class MyView(BaseView):
         queue = 'rf-execution'
         location = 'europe-west1'
         payload = {
-            "run_id": run_id
+            "run_id": run_id,
             "variables": [
                 {"argument1": argument1},
                 {"argument2": argument2},
@@ -146,7 +147,7 @@ class MyView(BaseView):
         }
 
         # The API expects a payload of type bytes.
-        converted_payload = payload.encode()
+        converted_payload = json.dumps(payload).encode()
 
         # Add the payload to the request.
         task['app_engine_http_request']['body'] = converted_payload
@@ -158,7 +159,7 @@ class MyView(BaseView):
 
     @expose('/execute', methods=["POST"])
     def execute_robot(self):
-        payload = request.get_data(as_text=True)
+        payload = request.get_json()
         '''
         run_output_dir = self.output_dir + run_id
         mkdir(run_output_dir)
