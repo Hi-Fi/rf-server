@@ -7,6 +7,7 @@ from datetime import datetime
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
+from google.cloud import tasks_v2beta3
 
 
 """
@@ -117,17 +118,57 @@ class MyView(BaseView):
         # do something with param1
         # and return it
         run_id = str(uuid.uuid4())
-        run_output_dir = self.output_dir + run_id
-        mkdir(run_output_dir)
         argument1 = self.cookie_or_default(request, "argument1", "argument1")
         argument2 = self.cookie_or_default(request, "argument2", "argument2")
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
+        client = tasks_v2beta3.CloudTasksClient()
+        project = 'rf-server-dev'
+        queue = 'rf-execution'
+        location = 'europe-west1'
+        payload = {
+            "run_id": run_id
+            "variables": [
+                {"argument1": argument1},
+                {"argument2": argument2},
+                {"secret_argument": argument3}
+            ]
+        }
+
+        # Construct the fully qualified queue name.
+        parent = client.queue_path(project, location, queue)
+
+        # Construct the request body.
+        task = {
+            'app_engine_http_request': {  # Specify the type of request.
+                'http_method': 'POST',
+                'relative_uri': '/robot/execute'
+            }
+        }
+
+        # The API expects a payload of type bytes.
+        converted_payload = payload.encode()
+
+        # Add the payload to the request.
+        task['app_engine_http_request']['body'] = converted_payload
+
+        response = client.create_task(parent, task)
+
+        print('Created task {}'.format(response.name))
+        return response
+
+    @expose('/execute', methods=["POST"])
+    def execute_robot(self):
+        payload = request.get_data(as_text=True)
+        '''
+        run_output_dir = self.output_dir + run_id
+        mkdir(run_output_dir)
         with open(run_output_dir+'/run.log', 'w') as logfile:
             result = run(path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
         self.update_redirect()
         resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
         return resp
-
+        '''
+        return 'Printed task payload: {}'.format(payload)
 
 appbuilder.add_view(MyView(), name='Robot')
 
