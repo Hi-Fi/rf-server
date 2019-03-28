@@ -142,7 +142,8 @@ class MyView(BaseView):
         task = {
             'app_engine_http_request': {  # Specify the type of request.
                 'http_method': 'POST',
-                'relative_uri': '/robot/execute'
+                'relative_uri': '/robot/execute',
+                'headers': {"Content-Type": "application/json"}
             }
         }
 
@@ -155,7 +156,8 @@ class MyView(BaseView):
         response = client.create_task(parent, task)
 
         print('Created task {}'.format(response.name))
-        return response
+        resp = make_response(self.render_template('robot_run.html', outputdir=self.output_dir + run_id, run_id=run_id))
+        return resp
 
     @expose('/execute', methods=["POST"])
     def execute_robot(self):
@@ -170,6 +172,7 @@ class MyView(BaseView):
         return resp
         '''
         return 'Printed task payload: {}'.format(payload)
+
 
 appbuilder.add_view(MyView(), name='Robot')
 
