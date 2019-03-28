@@ -9,7 +9,7 @@ import xml.etree.ElementTree
 from app.forms import ArgumentForm
 from google.cloud import tasks_v2beta3
 import json
-
+from app import models
 
 """
     Create your Views::
@@ -67,13 +67,8 @@ class MyView(BaseView):
         # do something with param1
         # and return it
         self.update_redirect()
-        directories = filter(lambda f: not f.startswith('.'), listdir(self.output_dir))
-        directory_list = []
-        for directory in directories:
-            directory_list.append({"name": directory,
-                                   "completed": datetime.fromtimestamp(path.getctime(self.output_dir + directory)).strftime("%d.%m.%Y %H:%M:%S"),
-                                   "timestamp": path.getctime(self.output_dir + directory)})
-        directory_list.sort(key=lambda x: x.get("timestamp"), reverse=True)
+        directory_list = models.get_executions()
+        print(directory_list)
         return self.render_template('robot_runs.html', runs=directory_list)
 
     @expose('/run/<string:param1>')
@@ -156,6 +151,7 @@ class MyView(BaseView):
         response = client.create_task(parent, task)
 
         print('Created task {}'.format(response.name))
+        models.create_execution(run_id)
         resp = make_response(self.render_template('robot_run.html', outputdir=self.output_dir + run_id, run_id=run_id))
         return resp
 
@@ -178,6 +174,7 @@ class MyView(BaseView):
                 stderr=logfile,
                 variable=variable_list
                )
+        models.update_execution()
         # self.update_redirect()
         # resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
         # return resp
