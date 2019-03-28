@@ -4,6 +4,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from google.cloud import datastore
 from datetime import datetime
+import logging
+
 """
 
 You can use the extra Flask-AppBuilder fields and Mixin's
@@ -17,7 +19,8 @@ datastore_client = datastore.Client(project="rf-server-dev")
 
 
 def create_execution(run_id):
-    entity = datastore.Entity(key=run_id)
+    key = datastore_client.key('Execution', run_id)
+    entity = datastore.Entity(key=key)
     entity.update({
         'status': 'scheduled',
         'scheduled': datetime.now(),
@@ -27,7 +30,8 @@ def create_execution(run_id):
 
 
 def update_execution(run_id, status):
-    entity = datastore_client.get(key=run_id)
+    key = datastore_client.key('Execution', run_id)
+    entity = datastore_client.get(key=key)
     entity.update({
         'status': status,
         'modified': datetime.now()
@@ -36,6 +40,6 @@ def update_execution(run_id, status):
 
 
 def get_executions():
-    query = datastore_client.query(kind='execution')
+    query = datastore_client.query(kind='Execution')
     query.order = ['-scheduled']
     return query.fetch()
