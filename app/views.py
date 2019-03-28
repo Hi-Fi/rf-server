@@ -162,15 +162,24 @@ class MyView(BaseView):
     @expose('/execute', methods=["POST"])
     def execute_robot(self):
         payload = request.get_json()
-        '''
-        run_output_dir = self.output_dir + run_id
+        print('Printed task payload: {}'.format(payload))
+        run_output_dir = self.output_dir + payload.run_id
         mkdir(run_output_dir)
+        variable_list = []
+        for variable in payload.variabes:
+            variable_list.append(variable.key+":"+variable.value)
         with open(run_output_dir+'/run.log', 'w') as logfile:
-            result = run(path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
-        self.update_redirect()
-        resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
-        return resp
-        '''
+            run(path.dirname(__file__) + '/../tests',
+                outputdir=run_output_dir,
+                report=None,
+                log=None,
+                stdout=logfile,
+                stderr=logfile,
+                variable=variable_list
+               )
+        # self.update_redirect()
+        # resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
+        # return resp
         return 'Printed task payload: {}'.format(payload)
 
 
