@@ -42,4 +42,4 @@ def update_execution(run_id, status):
 def get_executions():
     query = datastore_client.query(kind='Execution')
     query.order = ['-scheduled']
-    return query.fetch()
+    return list(query.fetch())

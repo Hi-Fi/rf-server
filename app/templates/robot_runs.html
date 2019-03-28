@@ -5,14 +5,16 @@
         <thead>
         <tr>
             <th>Run ID</th>
-            <th>Run completion</th>
+            <th>Run status</th>
+            <th>Last modified</th>
         </tr>
         </thead>
         <tbody>
     {% for run in runs %}
         <tr>
             <th><a href="/robot/run/{{ run.name }}">{{ run.name }}</a></th>
-            <th>{{ run.completed }}</th>
+            <th>{{ run.status }}</th>
+            <th>{{ run.modified }}</th>
         </tr>
   {% endfor %}
         </tbody>
