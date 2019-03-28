@@ -163,11 +163,12 @@ class MyView(BaseView):
     def execute_robot(self):
         payload = request.get_json()
         print('Printed task payload: {}'.format(payload))
-        run_output_dir = self.output_dir + payload.run_id
+        run_output_dir = self.output_dir + payload['run_id']
         mkdir(run_output_dir)
         variable_list = []
-        for variable in payload.variabes:
-            variable_list.append(variable.key+":"+variable.value)
+        for variable in payload['variables']:
+            for key, value in variable.items():
+                variable_list.append(key+":"+value)
         with open(run_output_dir+'/run.log', 'w') as logfile:
             run(path.dirname(__file__) + '/../tests',
                 outputdir=run_output_dir,
