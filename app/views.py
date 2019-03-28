@@ -174,7 +174,7 @@ class MyView(BaseView):
                 stderr=logfile,
                 variable=variable_list
                )
-        models.update_execution()
+        models.update_execution(run_id=payload['run_id'], status="executed")
         # self.update_redirect()
         # resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
         # return resp

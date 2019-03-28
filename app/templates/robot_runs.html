@@ -12,7 +12,7 @@
         <tbody>
     {% for run in runs %}
         <tr>
-            <th><a href="/robot/run/{{ run.name }}">{{ run.name }}</a></th>
+            <th><a href="/robot/run/{{ run.key }}">{{ run.key }}</a></th>
             <th>{{ run.status }}</th>
             <th>{{ run.modified }}</th>
         </tr>
