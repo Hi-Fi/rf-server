@@ -21,7 +21,10 @@ def upload_file(run_id, file_name):
 def get_file(run_id, file_name):
     """Downloads a file from the bucket."""
     blob = bucket.blob(file_name)
-    Path('/tmp/'+run_id).mkdir()
+    try:
+        Path('/tmp/'+run_id).mkdir()
+    except:
+        pass
     target_file = '/tmp/'+run_id+'/'+file_name
 
     Path(target_file).touch()

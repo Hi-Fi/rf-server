@@ -37,7 +37,7 @@ db.create_all()
 
 class MyView(BaseView):
     route_base = "/robot"
-    output_dir = '/tmp/work/'
+    output_dir = '/tmp/'
     try:
         mkdir(output_dir)
     except:
@@ -74,7 +74,6 @@ class MyView(BaseView):
     def robot_run_results(self, param1):
         # do something with param1
         # and return it
-        mkdir(self.output_dir+param1)
         storage.get_file(param1, 'output.xml')
         output = xml.etree.ElementTree.parse(self.output_dir+param1+'/output.xml')
         nodes = []
@@ -161,7 +160,10 @@ class MyView(BaseView):
         payload = request.get_json()
         print('Printed task payload: {}'.format(payload))
         run_output_dir = self.output_dir + payload['run_id']
-        mkdir(run_output_dir)
+        try:
+            mkdir(run_output_dir)
+        except:
+            pass
         variable_list = []
         for variable in payload['variables']:
             for key, value in variable.items():
