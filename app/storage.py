@@ -20,7 +20,7 @@ def upload_file(run_id, file_name):
 
 def get_file(run_id, file_name):
     """Downloads a file from the bucket."""
-    blob = bucket.blob(file_name)
+    blob = bucket.blob(run_id+'/'+file_name)
     try:
         Path('/tmp/'+run_id).mkdir()
     except:
