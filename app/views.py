@@ -74,6 +74,7 @@ class MyView(BaseView):
     def robot_run_results(self, param1):
         # do something with param1
         # and return it
+        mkdir(self.output_dir+param1)
         storage.get_file('/'+param1+'/output.xml')
         output = xml.etree.ElementTree.parse(self.output_dir+param1+'/output.xml')
         nodes = []
@@ -175,8 +176,8 @@ class MyView(BaseView):
                 variable=variable_list
                )
         models.update_execution(run_id=payload['run_id'], status="executed")
-        storage.upload_file(run_output_dir+'output.xml')
-        storage.upload_file(run_output_dir+'run.log')
+        storage.upload_file(run_output_dir+'output.xml', payload['run_id']+'/output.xml')
+        storage.upload_file(run_output_dir+'run.log', payload['run_id']+'/run.log')
         return 'Printed task payload: {}'.format(payload)
 
 
