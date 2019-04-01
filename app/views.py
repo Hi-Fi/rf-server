@@ -1,9 +1,8 @@
 from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
-from app import appbuilder, db
+from app import appbuilder, db, storage
 from robot import run
-from os import path, mkdir, listdir
-from datetime import datetime
+from os import path, mkdir
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
@@ -75,6 +74,7 @@ class MyView(BaseView):
     def robot_run_results(self, param1):
         # do something with param1
         # and return it
+        storage.get_file('/'+param1+'/output.xml')
         output = xml.etree.ElementTree.parse(self.output_dir+param1+'/output.xml')
         nodes = []
         edges = []
@@ -175,9 +175,8 @@ class MyView(BaseView):
                 variable=variable_list
                )
         models.update_execution(run_id=payload['run_id'], status="executed")
-        # self.update_redirect()
-        # resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
-        # return resp
+        storage.upload_file(run_output_dir+'output.xml')
+        storage.upload_file(run_output_dir+'run.log')
         return 'Printed task payload: {}'.format(payload)
 
 
