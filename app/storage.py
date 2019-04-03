@@ -40,6 +40,6 @@ def get_file(run_id, file_name):
             target_file))
 
 
-def get_signed_url(run_id, file_name, expiration=timedelta.min(1)):
+def get_signed_url(run_id, file_name, expiration=timedelta(minutes=1)):
     blob = bucket.blob(run_id+'/'+file_name)
     return blob.generate_signed_url(expiration)
