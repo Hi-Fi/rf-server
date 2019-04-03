@@ -1,5 +1,6 @@
 from google.cloud import storage
 from pathlib import Path
+from datetime import timedelta
 
 
 client = storage.Client()
@@ -34,3 +35,8 @@ def get_file(run_id, file_name):
     print('Blob {} downloaded to {}.'.format(
         file_name,
         target_file))
+
+
+def get_signed_url(run_id, file_name, expiration=timedelta.min(1)):
+    blob = bucket.blob(run_id+'/'+file_name)
+    return blob.generate_signed_url(expiration)

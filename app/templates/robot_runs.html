@@ -6,6 +6,10 @@
         <tr>
             <th>Run ID</th>
             <th>Run status</th>
+            <th>Run log</th>
+            <th>Report</th>
+            <th>Log</th>
+            <th>Metrics</th>
             <th>Last modified</th>
         </tr>
         </thead>
@@ -14,6 +18,10 @@
         <tr>
             <th><a href="/robot/run/{{ run.key }}">{{ run.key }}</a></th>
             <th>{{ run.status }}</th>
+            <th>{{ run.run_log }}</th>
+            <th>{{ run.report }}</th>
+            <th>{{ run.log }}</th>
+            <th>{{ run.metrics }}</th>
             <th>{{ run.modified }}</th>
         </tr>
   {% endfor %}

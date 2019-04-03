@@ -1,15 +1,13 @@
 from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
-from app import appbuilder, db, storage
-from robot import run
+from app import appbuilder, db, storage, tasks
+from robot import run, rebot
 from os import path, mkdir
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
-from google.cloud import tasks_v2beta3
-import json
 from app import models
-
+from robotframework_metrics import robotmetrics
 """
     Create your Views::
 
@@ -67,7 +65,6 @@ class MyView(BaseView):
         # and return it
         self.update_redirect()
         directory_list = models.get_executions()
-        print(directory_list)
         return self.render_template('robot_runs.html', runs=directory_list)
 
     @expose('/run/<string:param1>')
@@ -117,40 +114,10 @@ class MyView(BaseView):
         argument1 = self.cookie_or_default(request, "argument1", "argument1")
         argument2 = self.cookie_or_default(request, "argument2", "argument2")
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
-        client = tasks_v2beta3.CloudTasksClient()
-        project = 'rf-server-dev'
-        queue = 'rf-execution'
-        location = 'europe-west1'
-        payload = {
-            "run_id": run_id,
-            "variables": [
-                {"argument1": argument1},
-                {"argument2": argument2},
-                {"secret_argument": argument3}
-            ]
-        }
-
-        # Construct the fully qualified queue name.
-        parent = client.queue_path(project, location, queue)
-
-        # Construct the request body.
-        task = {
-            'app_engine_http_request': {  # Specify the type of request.
-                'http_method': 'POST',
-                'relative_uri': '/robot/execute',
-                'headers': {"Content-Type": "application/json"}
-            }
-        }
-
-        # The API expects a payload of type bytes.
-        converted_payload = json.dumps(payload).encode()
-
-        # Add the payload to the request.
-        task['app_engine_http_request']['body'] = converted_payload
-
-        response = client.create_task(parent, task)
-
-        print('Created task {}'.format(response.name))
+        tasks.create_execution_task(run_id,
+                                    {"argument1": argument1},
+                                    {"argument2": argument2},
+                                    {"secret_argument": argument3})
         models.create_execution(run_id)
         resp = make_response(self.render_template('robot_run.html', outputdir=self.output_dir + run_id, run_id=run_id))
         return resp
@@ -159,7 +126,8 @@ class MyView(BaseView):
     def execute_robot(self):
         payload = request.get_json()
         print('Printed task payload: {}'.format(payload))
-        run_output_dir = self.output_dir + payload['run_id']
+        run_id = payload['run_id']
+        run_output_dir = self.output_dir + run_id
         try:
             mkdir(run_output_dir)
         except:
@@ -177,10 +145,29 @@ class MyView(BaseView):
                 stderr=logfile,
                 variable=variable_list
                )
-        models.update_execution(run_id=payload['run_id'], status="executed")
-        storage.upload_file(payload['run_id'], 'output.xml')
-        storage.upload_file(payload['run_id'], 'run.log')
+        models.update_execution(run_id=run_id, status="executed")
+        storage.upload_file(run_id, 'output.xml')
+        storage.upload_file(run_id, 'run.log')
+        tasks.create_metrics_task(run_id)
+        tasks.create_parsing_task(run_id)
         return 'Printed task payload: {}'.format(payload)
+
+    @expose('/generate/reports', methods=['POST'])
+    def parse_output_xml(self):
+        payload = request.get_json()
+        run_id = payload['run_id']
+        storage.get_file(run_id, 'output.xml')
+        rebot(self.output_dir+run_id+'/output.xml')
+        storage.upload_file(run_id, "report.html")
+        storage.upload_file(run_id, "log.html")
+
+    @expose('/generate/metrics', methods=['POST'])
+    def parse_to_metrics(self):
+        payload = request.get_json()
+        run_id = payload['run_id']
+        storage.get_file(run_id, 'output.xml')
+        robotmetrics.generate_report(path=self.output_dir+run_id+'/')
+        storage.upload_file(run_id, "metric-timestamp.html")
 
 
 appbuilder.add_view(MyView(), name='Robot')
