@@ -16,7 +16,7 @@
         <tbody>
     {% for run in runs %}
         <tr>
-            <th><a href="/robot/run/{{ run.key }}">{{ run.key }}</a></th>
+            <th><a href="/robot/run/{{ run.key.id_or_name() }}">{{ run.key.id_or_name() }}</a></th>
             <th>{{ run.status }}</th>
             <th>{{ run.run_log }}</th>
             <th>{{ run.report }}</th>

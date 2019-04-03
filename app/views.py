@@ -156,8 +156,13 @@ class MyView(BaseView):
     def parse_output_xml(self):
         payload = request.get_json()
         run_id = payload['run_id']
+        run_output_dir = self.output_dir + run_id
         storage.get_file(run_id, 'output.xml')
-        rebot(self.output_dir+run_id+'/output.xml')
+        with open(run_output_dir+'/rebot.log', 'w') as stdout:
+            rebot(self.output_dir+run_id+'/output.xml',
+                  outputdir=run_output_dir,
+                  stdout=stdout)
+        storage.upload_file(run_id, "rebot.log")
         storage.upload_file(run_id, "report.html")
         storage.upload_file(run_id, "log.html")
 
