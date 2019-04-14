@@ -162,8 +162,11 @@ class MyView(BaseView):
                   outputdir=run_output_dir,
                   stdout=stdout)
         storage.upload_file(run_id, "rebot.log")
-        storage.upload_file(run_id, "report.html")
-        storage.upload_file(run_id, "log.html")
+        report_link = storage.upload_file(run_id, "report.html")
+        log_link = storage.upload_file(run_id, "log.html")
+        models.add_storage_link(run_id, "report", report_link)
+        models.add_storage_link(run_id, "log", log_link)
+        return "Parsed log files"
 
     @expose('/generate/metrics', methods=['POST'])
     def parse_to_metrics(self):
@@ -175,7 +178,9 @@ class MyView(BaseView):
         system(generate_metrics)
         metrics_file = [f for f in listdir(run_output_dir) if f.startswith('metrics')][0]
         rename(run_output_dir+metrics_file, run_output_dir+'metrics.html')
-        storage.upload_file(run_id, "metrics.html")
+        metrics_link = storage.upload_file(run_id, "metrics.html")
+        models.add_storage_link(run_id, "metrics", metrics_link)
+        return "Generated RF metrics"
 
 
 appbuilder.add_view(MyView(), name='Robot')

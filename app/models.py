@@ -34,6 +34,15 @@ def update_execution(run_id, status):
     datastore_client.put(entity)
 
 
+def add_storage_link(run_id, link_name, link_url):
+    key = datastore_client.key('Execution', run_id)
+    entity = datastore_client.get(key=key)
+    entity.update({
+        link_name: link_url
+    })
+    datastore_client.put(entity)
+
+
 def get_executions():
     query = datastore_client.query(kind='Execution')
     query.order = ['-scheduled']
