@@ -2,12 +2,11 @@ from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
 from app import appbuilder, db, storage, tasks
 from robot import run, rebot
-from os import path, mkdir
+from os import path, mkdir, system, listdir, rename
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
 from app import models
-from robotframework_metrics import robotmetrics
 """
     Create your Views::
 
@@ -171,8 +170,12 @@ class MyView(BaseView):
         payload = request.get_json()
         run_id = payload['run_id']
         storage.get_file(run_id, 'output.xml')
-        robotmetrics.generate_report(path=self.output_dir+run_id+'/')
-        storage.upload_file(run_id, "metric-timestamp.html")
+        run_output_dir = self.output_dir+run_id+'/'
+        generate_metrics = "robotmetrics --inputpath {} -E False".format(run_output_dir)
+        system(generate_metrics)
+        metrics_file = (f for f in listdir(run_output_dir) if f.startswith('metrics'))[0]
+        rename(metrics_file, run_output_dir+'metrics.html')
+        storage.upload_file(run_id, "metrics.html")
 
 
 appbuilder.add_view(MyView(), name='Robot')
