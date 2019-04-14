@@ -12,8 +12,8 @@ def upload_file(run_id, file_name):
     """Uploads a file to the bucket."""
     blob = bucket.blob(run_id+'/'+file_name)
 
-    blob.make_public()
     blob.upload_from_filename('/tmp/'+run_id+'/'+file_name)
+    blob.make_public()
 
     print('File {} uploaded to {}.'.format(
         '/tmp/'+run_id+'/'+file_name,
