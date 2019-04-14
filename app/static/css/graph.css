@@ -2,3 +2,7 @@
   stroke: black;
   stroke-width: 1px;
 }
+
+th {
+  padding: 1px 5px 1px 5px;
+}
