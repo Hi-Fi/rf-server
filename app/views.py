@@ -173,8 +173,8 @@ class MyView(BaseView):
         run_output_dir = self.output_dir+run_id+'/'
         generate_metrics = "robotmetrics --inputpath {} -E False".format(run_output_dir)
         system(generate_metrics)
-        metrics_file = (f for f in listdir(run_output_dir) if f.startswith('metrics'))[0]
-        rename(metrics_file, run_output_dir+'metrics.html')
+        metrics_file = [f for f in listdir(run_output_dir) if f.startswith('metrics')][0]
+        rename(run_output_dir+metrics_file, run_output_dir+'metrics.html')
         storage.upload_file(run_id, "metrics.html")
 
 
