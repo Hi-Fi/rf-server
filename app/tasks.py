@@ -1,6 +1,7 @@
 from google.cloud import tasks_v2beta3
 import json
 
+
 def create_execution_task(run_id, *arguments):
     payload = {
         "run_id": run_id,
@@ -12,6 +13,7 @@ def create_execution_task(run_id, *arguments):
 
     create_and_submit_task(payload, 'rf-execution', '/robot/execute')
 
+
 def create_metrics_task(run_id):
     payload = {
         "run_id": run_id
@@ -19,14 +21,13 @@ def create_metrics_task(run_id):
 
     create_and_submit_task(payload, 'rf-metrics', '/robot/generate/metrics')
 
+
 def create_parsing_task(run_id):
     payload = {
         "run_id": run_id
     }
 
     create_and_submit_task(payload, 'rf-report', '/robot/generate/reports')
-
-
 
 
 def create_and_submit_task(payload, queue, target):
