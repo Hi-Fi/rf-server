@@ -17,9 +17,9 @@
         <tr>
             <th><a href="/robot/run/{{ run.key.name }}">{{ run.key.name }}</a></th>
             <th>{{ run.status }}</th>
-            <th><a href="{{ run.report }}">Report</a></th>
-            <th><a href="{{ run.log }}">Log</a></th>
-            <th><a href="{{ run.metrics }}">Metrics</a></th>
+            <th>{% if run.report %}<a href="{{ run.report }}">Report</a>{% endif %}</th>
+            <th>{% if run.log %}<a href="{{ run.log }}">Log</a>{% endif %}</th>
+            <th>{% if run.metrics %}<a href="{{ run.metrics }}">Metrics{% endif %}</a></th>
             <th>{{ run.modified.strftime('%d.%m.%Y %H:%M:%S') }}</th>
         </tr>
   {% endfor %}
