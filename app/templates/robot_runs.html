@@ -6,7 +6,6 @@
         <tr>
             <th>Run ID</th>
             <th>Run status</th>
-            <th>Run log</th>
             <th>Report</th>
             <th>Log</th>
             <th>Metrics</th>
@@ -18,11 +17,10 @@
         <tr>
             <th><a href="/robot/run/{{ run.key.name }}">{{ run.key.name }}</a></th>
             <th>{{ run.status }}</th>
-            <th>{{ run.run_log }}</th>
-            <th>{{ run.report }}</th>
-            <th>{{ run.log }}</th>
-            <th>{{ run.metrics }}</th>
-            <th>{{ run.modified }}</th>
+            <th><a href="{{ run.report }}">Report</a></th>
+            <th><a href="{{ run.log }}">Log</a></th>
+            <th><a href="{{ run.metrics }}">Metrics</a></th>
+            <th>{{ run.modified.strftime('%d.%m.%Y %H:%M:%S') }}</th>
         </tr>
   {% endfor %}
         </tbody>
