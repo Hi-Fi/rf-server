@@ -32,7 +32,7 @@ def create_parsing_task(run_id):
 
 def create_and_submit_task(payload, queue, target):
     client = tasks_v2beta3.CloudTasksClient()
-    project = 'rf-server-dev'
+    project = 'robocon2020'
     queue = 'rf-execution'
     location = 'europe-west1'
 

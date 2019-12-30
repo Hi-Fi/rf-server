@@ -5,7 +5,7 @@ from os.path import isfile
 
 client = storage.Client()
 
-bucket = client.get_bucket('rf-server-dev.appspot.com')
+bucket = client.get_bucket('robocon2020.appspot.com')
 
 
 def upload_file(run_id, file_name):
