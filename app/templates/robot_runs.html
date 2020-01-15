@@ -15,6 +15,7 @@
         </thead>
         <tbody>
     {% for run in runs %}
+    {% if run is not none and run.key is not none %}   
         <tr>
             <th><a href="/robot/run/{{ run.key.id_or_name() }}">{{ run.key.id_or_name() }}</a></th>
             <th>{{ run.status }}</th>
@@ -24,6 +25,7 @@
             <th>{{ run.metrics }}</th>
             <th>{{ run.modified }}</th>
         </tr>
+    {% endif %}
   {% endfor %}
         </tbody>
     </table>
