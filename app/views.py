@@ -49,10 +49,14 @@ class MyView(BaseView):
             resp.set_cookie("argument1", form.argument1.data)
             resp.set_cookie("argument2", form.argument2.data)
             resp.set_cookie("secret_argument", form.secret_argument.data)
+            resp.set_cookie("test_suite", form.test_suite.data)
+
         else:
             form.argument1.default = self.cookie_or_default(request, "argument1", "argument1")
             form.argument2.default = self.cookie_or_default(request, "argument2", "argument2")
             form.secret_argument.default = self.cookie_or_default(request, "secret_argument", "secret_argument")
+            form.test_suite.default = self.cookie_or_default(request, "test_suite", "tests")
+
             resp = make_response(self.render_template("arguments.html", title="Set arguments", form=form))
         return resp
 
@@ -114,7 +118,9 @@ class MyView(BaseView):
         argument1 = self.cookie_or_default(request, "argument1", "argument1")
         argument2 = self.cookie_or_default(request, "argument2", "argument2")
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
+        test_suite = self.cookie_or_default(request, "test_suite", "tests")
         tasks.create_execution_task(run_id,
+                                    test_suite,
                                     {"argument1": argument1},
                                     {"argument2": argument2},
                                     {"secret_argument": argument3})
@@ -127,6 +133,8 @@ class MyView(BaseView):
         payload = request.get_json()
         print('Printed task payload: {}'.format(payload))
         run_id = payload['run_id']
+        test_suite = payload['test_suite']
+        suite_dir = storage.get_all_files_from_directory(test_suite)
         run_output_dir = self.output_dir + run_id
         try:
             mkdir(run_output_dir)
@@ -137,7 +145,7 @@ class MyView(BaseView):
             for key, value in variable.items():
                 variable_list.append(key+":"+value)
         with open(run_output_dir+'/run.log', 'w') as logfile:
-            run(path.dirname(__file__) + '/../tests',
+            run(suite_dir,
                 outputdir=run_output_dir,
                 report=None,
                 log=None,
@@ -165,6 +173,7 @@ class MyView(BaseView):
         storage.upload_file(run_id, "rebot.log")
         storage.upload_file(run_id, "report.html")
         storage.upload_file(run_id, "log.html")
+        return 'Created log and report for: {}'.format(run_id)
 
     @expose('/generate/metrics', methods=['POST'])
     def parse_to_metrics(self):
@@ -173,6 +182,8 @@ class MyView(BaseView):
         storage.get_file(run_id, 'output.xml')
         robotmetrics.generate_report(path=self.output_dir+run_id+'/')
         storage.upload_file(run_id, "metric-timestamp.html")
+        return 'Created metrics for: {}'.format(run_id)
+
 
 
 appbuilder.add_view(MyView(), name='Robot')

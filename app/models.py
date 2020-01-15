@@ -10,7 +10,7 @@ AuditMixin will add automatic timestamp of created and modified by who
 
 """
 
-datastore_client = datastore.Client(project="rf-server-dev")
+datastore_client = datastore.Client(project="robocon2020")
 
 
 def create_execution(run_id):

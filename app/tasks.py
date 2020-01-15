@@ -1,9 +1,10 @@
 from google.cloud import tasks_v2beta3
 import json
 
-def create_execution_task(run_id, *arguments):
+def create_execution_task(run_id, test_suite, *arguments):
     payload = {
         "run_id": run_id,
+        "test_suite": test_suite,
         "variables": []
     }
 
@@ -31,7 +32,7 @@ def create_parsing_task(run_id):
 
 def create_and_submit_task(payload, queue, target):
     client = tasks_v2beta3.CloudTasksClient()
-    project = 'rf-server-dev'
+    project = 'robocon2020'
     queue = 'rf-execution'
     location = 'europe-west1'
 
