@@ -3,12 +3,11 @@ from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
 from app import appbuilder, db, storage, tasks
 from robot import run, rebot
-from os import path, mkdir, listdir
+from os import path, mkdir, system, listdir, rename
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
 from app import models
-from robotframework_metrics import robotmetrics
 """
     Create your Views::
 
@@ -172,9 +171,11 @@ class MyView(BaseView):
                   outputdir=run_output_dir,
                   stdout=stdout)
         storage.upload_file(run_id, "rebot.log")
-        storage.upload_file(run_id, "report.html")
-        storage.upload_file(run_id, "log.html")
-        return 'Created log and report for: {}'.format(run_id)
+        report_link = storage.upload_file(run_id, "report.html")
+        log_link = storage.upload_file(run_id, "log.html")
+        models.add_storage_link(run_id, "report", report_link)
+        models.add_storage_link(run_id, "log", log_link)
+        return "Parsed log files"
 
     @expose('/generate/metrics', methods=['POST'])
     def parse_to_metrics(self):
@@ -195,8 +196,9 @@ class MyView(BaseView):
             if (generated_file.startswith("metrics")):
                 metrics_file = generated_file
 
-        storage.upload_file(run_id, metrics_file)
-        return 'Created metrics for: {}'.format(run_id)
+        metrics_link = storage.upload_file(run_id, metrics_file)
+        models.add_storage_link(run_id, "metrics", metrics_link)
+        return "Generated RF metrics"
 
 
 

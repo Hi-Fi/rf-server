@@ -17,10 +17,13 @@ def upload_file(run_id, file_name):
     blob = bucket.blob(run_id+'/'+file_name)
 
     blob.upload_from_filename('/tmp/'+run_id+'/'+file_name)
+    blob.make_public()
 
     print('File {} uploaded to {}.'.format(
         '/tmp/'+run_id+'/'+file_name,
         run_id+'/'+file_name))
+
+    return blob.public_url
 
 def list_files_in_directory(directory_name):
     return bucket.list_blobs(prefix=directory_name)
