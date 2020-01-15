@@ -15,6 +15,10 @@
             {{ form.secret_argument.label }}<br>
             {{ form.secret_argument(size=32) }}
         </p>
+        <p>
+            {{ form.test_suite.label }}<br>
+            {{ form.test_suite(size=32) }}
+        </p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

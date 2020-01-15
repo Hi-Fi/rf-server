@@ -1,8 +1,9 @@
+import types
 from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
 from app import appbuilder, db, storage, tasks
 from robot import run, rebot
-from os import path, mkdir
+from os import path, mkdir, listdir
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
@@ -180,14 +181,21 @@ class MyView(BaseView):
         payload = request.get_json()
         run_id = payload['run_id']
         storage.get_file(run_id, 'output.xml')
-        opts = {"path": self.output_dir+run_id+'/',
-                "output": "output.xml",
-                "log_name": "log.html",
-                "report_name": "report.html",
-                "ignoretype": robotmetrics.IGNORE_TYPES,
-                "ignore": robotmetrics.IGNORE_LIBRARIES}
+        opts = types.SimpleNamespace()
+        opts.path = self.output_dir+run_id+'/'
+        opts.output = "output.xml"
+        opts.log_name = "log.html"
+        opts.report_name = "report.html"
+        opts.ignoretype = robotmetrics.IGNORE_TYPES
+        opts.ignore = robotmetrics.IGNORE_LIBRARIES
+        opts.logo = "https://i.ibb.co/9qBkwDF/Testing-Fox-Logo.png"
         robotmetrics.generate_report(opts)
-        storage.upload_file(run_id, "metric-timestamp.html")
+        metrics_file = ""
+        for generated_file in listdir(opts.path):
+            if (generated_file.startswith("metrics")):
+                metrics_file = generated_file
+
+        storage.upload_file(run_id, metrics_file)
         return 'Created metrics for: {}'.format(run_id)
 
 
