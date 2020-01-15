@@ -5,9 +5,11 @@ from os.path import isfile
 import uuid
 import os
 
+from config import GAE_PROJECT
+
 client = storage.Client()
 
-bucket = client.get_bucket('robocon2020.appspot.com')
+bucket = client.get_bucket(f"{GAE_PROJECT}.appspot.com")
 
 
 def upload_file(run_id, file_name):

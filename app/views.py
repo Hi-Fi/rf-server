@@ -180,7 +180,13 @@ class MyView(BaseView):
         payload = request.get_json()
         run_id = payload['run_id']
         storage.get_file(run_id, 'output.xml')
-        robotmetrics.generate_report(path=self.output_dir+run_id+'/')
+        opts = {"path": self.output_dir+run_id+'/',
+                "output": "output.xml",
+                "log_name": "log.html",
+                "report_name": "report.html",
+                "ignoretype": robotmetrics.IGNORE_TYPES,
+                "ignore": robotmetrics.IGNORE_LIBRARIES}
+        robotmetrics.generate_report(opts)
         storage.upload_file(run_id, "metric-timestamp.html")
         return 'Created metrics for: {}'.format(run_id)
 

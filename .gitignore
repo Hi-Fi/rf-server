@@ -4,6 +4,7 @@ app.db
 ./build/*
 ./.idea
 ./.idea/*
+.vscode
 env
 venv
 *.sublime*

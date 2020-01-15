@@ -1,5 +1,6 @@
 from google.cloud import datastore
 from datetime import datetime
+from config import GAE_PROJECT
 
 """
 
@@ -10,7 +11,7 @@ AuditMixin will add automatic timestamp of created and modified by who
 
 """
 
-datastore_client = datastore.Client(project="robocon2020")
+datastore_client = datastore.Client(project=GAE_PROJECT)
 
 
 def create_execution(run_id):
