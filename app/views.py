@@ -8,6 +8,7 @@ import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
 from app import models
+from robotframework_metrics import robotmetrics
 """
     Create your Views::
 
