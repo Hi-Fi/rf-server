@@ -5,10 +5,13 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # Your App secret key
 SECRET_KEY = '\2\1thisismyscretkey\1\2\e\y\y\h'
 
+GAE_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', None)
+
 # The SQLAlchemy connection string.
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
+SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/app.db'
+#SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rf-server@/rf_server?unix_socket=/cloudsql/rf-server-dev:europe-west1:rf-server-dev-mysql'
 #SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
-#SQLALCHEMY_DATABASE_URI = 'postgresql://root:password@localhost/myapp'
+#SQLALCHEMY_DATABASE_URI = 'postgresql://postrgres:postgres@/rf-server'
 
 # Flask-WTF flag for CSRF
 CSRF_ENABLED = True

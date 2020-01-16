@@ -14,6 +14,11 @@ app.config.from_object('config')
 db = SQLA(app)
 appbuilder = AppBuilder(app, db.session)
 
+try:
+  import googleclouddebugger
+  googleclouddebugger.enable()
+except ImportError:
+  pass
 
 """
 from sqlalchemy.engine import Engine

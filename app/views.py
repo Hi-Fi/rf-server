@@ -1,14 +1,14 @@
+import types
 from flask import render_template, make_response, request
 from flask_appbuilder import BaseView, expose
-from app import appbuilder, db
-from robot import run
-import os.path
-from datetime import datetime
+from app import appbuilder, db, storage, tasks
+from robot import run, rebot
+from os import path, mkdir, system, listdir, rename
 import uuid
 import xml.etree.ElementTree
 from app.forms import ArgumentForm
-
-
+from app import models
+from robotframework_metrics import robotmetrics
 """
     Create your Views::
 
@@ -36,7 +36,11 @@ db.create_all()
 
 class MyView(BaseView):
     route_base = "/robot"
-    output_dir = os.path.dirname(__file__) + '/../work/'
+    output_dir = '/tmp/'
+    try:
+        mkdir(output_dir)
+    except:
+        pass
 
     @expose('/arguments', methods=['GET', 'POST'])
     def set_robot_arguments(self):
@@ -46,10 +50,14 @@ class MyView(BaseView):
             resp.set_cookie("argument1", form.argument1.data)
             resp.set_cookie("argument2", form.argument2.data)
             resp.set_cookie("secret_argument", form.secret_argument.data)
+            resp.set_cookie("test_suite", form.test_suite.data)
+
         else:
             form.argument1.default = self.cookie_or_default(request, "argument1", "argument1")
             form.argument2.default = self.cookie_or_default(request, "argument2", "argument2")
             form.secret_argument.default = self.cookie_or_default(request, "secret_argument", "secret_argument")
+            form.test_suite.default = self.cookie_or_default(request, "test_suite", "tests")
+
             resp = make_response(self.render_template("arguments.html", title="Set arguments", form=form))
         return resp
 
@@ -61,17 +69,14 @@ class MyView(BaseView):
         # do something with param1
         # and return it
         self.update_redirect()
-        directories = os.listdir(self.output_dir)
-        directory_list = []
-        for directory in directories:
-            directory_list.append({"name": directory,
-                                   "completed": datetime.fromtimestamp(os.path.getctime(self.output_dir + directory)).strftime("%d.%m.%Y %H:%M:%S")})
+        directory_list = models.get_executions()
         return self.render_template('robot_runs.html', runs=directory_list)
 
     @expose('/run/<string:param1>')
     def robot_run_results(self, param1):
         # do something with param1
         # and return it
+        storage.get_file(param1, 'output.xml')
         output = xml.etree.ElementTree.parse(self.output_dir+param1+'/output.xml')
         nodes = []
         edges = []
@@ -111,16 +116,91 @@ class MyView(BaseView):
         # do something with param1
         # and return it
         run_id = str(uuid.uuid4())
-        run_output_dir = self.output_dir + run_id
-        os.mkdir(run_output_dir)
         argument1 = self.cookie_or_default(request, "argument1", "argument1")
         argument2 = self.cookie_or_default(request, "argument2", "argument2")
         argument3 = self.cookie_or_default(request, "secret_argument", "secret_argument")
-        with open(run_output_dir+'/run.log', 'w') as logfile:
-            result = run(os.path.dirname(__file__) + '/../tests', outputdir=run_output_dir, report=None, log=None, stdout=logfile, stderr=logfile, variable=["argument1:"+argument1, "argument2:"+argument2, "secret_argument:"+argument3] )
-        self.update_redirect()
-        resp = make_response(self.render_template('robot_run.html', outputdir=run_output_dir, run_id=run_id))
+        test_suite = self.cookie_or_default(request, "test_suite", "tests")
+        tasks.create_execution_task(run_id,
+                                    test_suite,
+                                    {"argument1": argument1},
+                                    {"argument2": argument2},
+                                    {"secret_argument": argument3})
+        models.create_execution(run_id)
+        resp = make_response(self.render_template('robot_run.html', outputdir=self.output_dir + run_id, run_id=run_id))
         return resp
+
+    @expose('/execute', methods=["POST"])
+    def execute_robot(self):
+        payload = request.get_json()
+        print('Printed task payload: {}'.format(payload))
+        run_id = payload['run_id']
+        test_suite = payload['test_suite']
+        suite_dir = storage.get_all_files_from_directory(test_suite)
+        run_output_dir = self.output_dir + run_id
+        try:
+            mkdir(run_output_dir)
+        except:
+            pass
+        variable_list = []
+        for variable in payload['variables']:
+            for key, value in variable.items():
+                variable_list.append(key+":"+value)
+        with open(run_output_dir+'/run.log', 'w') as logfile:
+            run(suite_dir,
+                outputdir=run_output_dir,
+                report=None,
+                log=None,
+                stdout=logfile,
+                stderr=logfile,
+                variable=variable_list
+               )
+        models.update_execution(run_id=run_id, status="executed")
+        storage.upload_file(run_id, 'output.xml')
+        storage.upload_file(run_id, 'run.log')
+        tasks.create_metrics_task(run_id)
+        tasks.create_parsing_task(run_id)
+        return 'Printed task payload: {}'.format(payload)
+
+    @expose('/generate/reports', methods=['POST'])
+    def parse_output_xml(self):
+        payload = request.get_json()
+        run_id = payload['run_id']
+        run_output_dir = self.output_dir + run_id
+        storage.get_file(run_id, 'output.xml')
+        with open(run_output_dir+'/rebot.log', 'w') as stdout:
+            rebot(self.output_dir+run_id+'/output.xml',
+                  outputdir=run_output_dir,
+                  stdout=stdout)
+        storage.upload_file(run_id, "rebot.log")
+        report_link = storage.upload_file(run_id, "report.html")
+        log_link = storage.upload_file(run_id, "log.html")
+        models.add_storage_link(run_id, "report", report_link)
+        models.add_storage_link(run_id, "log", log_link)
+        return "Parsed log files"
+
+    @expose('/generate/metrics', methods=['POST'])
+    def parse_to_metrics(self):
+        payload = request.get_json()
+        run_id = payload['run_id']
+        storage.get_file(run_id, 'output.xml')
+        opts = types.SimpleNamespace()
+        opts.path = self.output_dir+run_id+'/'
+        opts.output = "output.xml"
+        opts.log_name = "log.html"
+        opts.report_name = "report.html"
+        opts.ignoretype = robotmetrics.IGNORE_TYPES
+        opts.ignore = robotmetrics.IGNORE_LIBRARIES
+        opts.logo = "https://i.ibb.co/9qBkwDF/Testing-Fox-Logo.png"
+        robotmetrics.generate_report(opts)
+        metrics_file = ""
+        for generated_file in listdir(opts.path):
+            if (generated_file.startswith("metrics")):
+                metrics_file = generated_file
+
+        metrics_link = storage.upload_file(run_id, metrics_file)
+        models.add_storage_link(run_id, "metrics", metrics_link)
+        return "Generated RF metrics"
+
 
 
 appbuilder.add_view(MyView(), name='Robot')

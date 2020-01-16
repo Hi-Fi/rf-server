@@ -1,19 +1,30 @@
 {% extends "appbuilder/base.html" %}
 {% block content %}
+    <link href="{{ url_for('static', filename='css/graph.css') }}" rel="stylesheet" type="text/css">
     <h1>Robot Framework runs</h1>
     <table>
         <thead>
         <tr>
             <th>Run ID</th>
-            <th>Run completion</th>
+            <th>Run status</th>
+            <th>Report</th>
+            <th>Log</th>
+            <th>Metrics</th>
+            <th>Last modified</th>
         </tr>
         </thead>
         <tbody>
     {% for run in runs %}
+    {% if run is not none and run.key is not none %}   
         <tr>
-            <th><a href="/robot/run/{{ run.name }}">{{ run.name }}</a></th>
-            <th>{{ run.completed }}</th>
+            <th><a href="/robot/run/{{ run.key.name }}">{{ run.key.name }}</a></th>
+            <th>{{ run.status }}</th>
+            <th>{% if run.report %}<a href="{{ run.report }}">Report</a>{% endif %}</th>
+            <th>{% if run.log %}<a href="{{ run.log }}">Log</a>{% endif %}</th>
+            <th>{% if run.metrics %}<a href="{{ run.metrics }}">Metrics{% endif %}</a></th>
+            <th>{{ run.modified.strftime('%d.%m.%Y %H:%M:%S') }}</th>
         </tr>
+    {% endif %}
   {% endfor %}
         </tbody>
     </table>
