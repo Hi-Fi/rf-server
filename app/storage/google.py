@@ -5,7 +5,7 @@ from os.path import isfile
 import uuid
 import os
 
-from config import GAE_PROJECT
+from config import GAE_PROJECT, TEMP_DIR
 
 client = storage.Client()
 
@@ -16,21 +16,27 @@ def upload_file(run_id, file_name):
     """Uploads a file to the bucket."""
     blob = bucket.blob(run_id+'/'+file_name)
 
-    blob.upload_from_filename('/tmp/'+run_id+'/'+file_name)
+    blob.upload_from_filename(TEMP_DIR+run_id+'/'+file_name)
     blob.make_public()
 
     print('File {} uploaded to {}.'.format(
-        '/tmp/'+run_id+'/'+file_name,
+        TEMP_DIR+run_id+'/'+file_name,
         run_id+'/'+file_name))
 
     return blob.public_url
 
-def list_files_in_directory(directory_name):
-    return bucket.list_blobs(prefix=directory_name)
+def list_files_in_directory(directory_name, delimiter=None):
+    blobs = bucket.list_blobs(prefix=directory_name, delimiter=delimiter)
+    if delimiter is not None:
+        temp_var = list(blobs)
+        return list(blobs.prefixes)
+    else:
+        return blobs
+
 
 def get_all_files_from_directory(directory_name):
     temp_dir = str(uuid.uuid4())
-    target_dir = '/tmp/' + temp_dir
+    target_dir = TEMP_DIR + temp_dir
     #Path.mkdir(target_dir, parents=True)
     os.makedirs(target_dir + '/' + directory_name, exist_ok=True)
     for file_to_download in list_files_in_directory(directory_name):
@@ -44,13 +50,13 @@ def get_all_files_from_directory(directory_name):
 
 def get_file(run_id, file_name):
     """Downloads a file from the bucket."""
-    target_file = '/tmp/' + run_id + '/' + file_name
+    target_file = TEMP_DIR + run_id + '/' + file_name
     if isfile(target_file):
         print("File {} already exits, not downloading again".format(target_file))
     else:
         blob = bucket.blob(run_id+'/'+file_name)
         try:
-            Path('/tmp/'+run_id).mkdir()
+            Path(TEMP_DIR+run_id).mkdir()
         except:
             pass
 

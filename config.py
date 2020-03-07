@@ -1,4 +1,5 @@
 import os
+import tempfile
 from flask_appbuilder.security.manager import AUTH_OID, AUTH_REMOTE_USER, AUTH_DB, AUTH_LDAP, AUTH_OAUTH
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -6,9 +7,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 SECRET_KEY = '\2\1thisismyscretkey\1\2\e\y\y\h'
 
 GAE_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', None)
+GAE_LOCATION = os.getenv('CLOUD_TASKS_LOCATION', None)
+TEMP_DIR = '/tmp/' if GAE_PROJECT else tempfile.mkdtemp()+'/'
+TEST_SUITE_DIR = 'test_suites/'
 
 # The SQLAlchemy connection string.
-SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/app.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///'+TEMP_DIR+'app.db'
 #SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:rf-server@/rf_server?unix_socket=/cloudsql/rf-server-dev:europe-west1:rf-server-dev-mysql'
 #SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
 #SQLALCHEMY_DATABASE_URI = 'postgresql://postrgres:postgres@/rf-server'
@@ -17,7 +21,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/app.db'
 CSRF_ENABLED = True
 
 #------------------------------
-# GLOBALS FOR APP Builder 
+# GLOBALS FOR APP Builder
 #------------------------------
 # Uncomment to setup Your App name
 APP_NAME = "RF-server"
@@ -36,10 +40,13 @@ APP_NAME = "RF-server"
 AUTH_TYPE = AUTH_DB
 
 # Uncomment to setup Full admin role name
-#AUTH_ROLE_ADMIN = 'Admin'
+AUTH_ROLE_ADMIN = 'Admin'
 
 # Uncomment to setup Public role name, no authentication needed
-AUTH_ROLE_PUBLIC = 'Public'
+AUTH_ROLE_PUBLIC = "Public"
+
+
+FAB_API_SWAGGER_UI = True
 
 # Will allow user self registration
 #AUTH_USER_REGISTRATION = True
@@ -95,12 +102,12 @@ IMG_UPLOAD_URL = '/static/uploads/'
 #APP_THEME = "cerulean.css"
 #APP_THEME = "amelia.css"
 #APP_THEME = "cosmo.css"
-#APP_THEME = "cyborg.css"  
+#APP_THEME = "cyborg.css"
 #APP_THEME = "flatly.css"
 #APP_THEME = "journal.css"
 #APP_THEME = "readable.css"
 #APP_THEME = "simplex.css"
-#APP_THEME = "slate.css"   
+#APP_THEME = "slate.css"
 #APP_THEME = "spacelab.css"
 #APP_THEME = "united.css"
 #APP_THEME = "yeti.css"

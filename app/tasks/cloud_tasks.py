@@ -1,8 +1,8 @@
 from google.cloud import tasks_v2beta3
 import json
-from config import GAE_PROJECT
+from config import GAE_PROJECT, GAE_LOCATION
 
-def create_execution_task(run_id, test_suite, *arguments):
+def create_execution_task(run_id, test_suite, arguments):
     payload = {
         "run_id": run_id,
         "test_suite": test_suite,
@@ -34,8 +34,8 @@ def create_parsing_task(run_id):
 def create_and_submit_task(payload, queue, target):
     client = tasks_v2beta3.CloudTasksClient()
     project = GAE_PROJECT
-    queue = 'rf-execution'
-    location = 'europe-west1'
+    queue = queue
+    location = GAE_LOCATION
 
     # Construct the fully qualified queue name.
     parent = client.queue_path(project, location, queue)

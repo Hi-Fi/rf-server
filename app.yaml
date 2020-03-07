@@ -1,1 +1,3 @@
 runtime: python37
+env_variables:
+    GAE_LOCATION: 'europe-west1'
